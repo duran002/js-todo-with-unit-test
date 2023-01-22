@@ -1,0 +1,193 @@
+ <!--/**
+  * @author: Duran Can Yılmaz
+  * @mail: durancanyilmaz@hotmail.com
+  * @date: 2023-01-23
+  * @description: This file contains the lists class which is used to store the lists. It was made as a study case for the Gizil company.
+  * @version: 1.0.0
+  * @license: GNU General Public License v3.0
+  */-->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JsTest - DCYILMAZ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="https://rengaver.com?utm_source=gizil-study-case"><img src="./img/logo.png" width="200" height="30" alt="rengaver"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+        <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="?page=1">List</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="?add_list=1">Add List</a>
+            </li>
+        </ul>
+        <form class="d-flex">
+            <input class="form-control me-2" id="search" type="search" placeholder="Search" aria-label="Search">
+        </form>
+        </div>
+    </div>
+</nav>
+<script src="./lists.js"></script>
+<script src="./lists.test.js"></script>
+
+    <div class="container">
+        <div class="col-lg-7 col-md-12 mx-auto mt-3 p-1 rounded bg-white shadow-sm">
+            <div id="data" class="row mx-0">{jsdata}</div>
+        </div>
+    </div>
+    <style>
+        * {
+            transition: all .1s;
+        }
+        body{
+            background: #d9d9d9 !important;
+        }
+        .justify-content-center{
+            width: 100%;
+        }
+        .link-dark{
+            text-decoration: none;
+            opacity: 0.9;
+        }
+        .link-dark:hover{
+            opacity: 1;
+            text-decoration: underline;
+        }
+        .trash{
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 0;
+            cursor: pointer;
+        }
+        .d-grid:hover  .trash{
+            display: block;
+            background: rgb(156, 16, 16);
+            color: white;
+            border:0;
+        }
+        .h-100{
+            height: 100%;
+        }
+    </style>
+<script>
+    var add_list = new URLSearchParams(window.location.search).get('add_list')??0;
+    var el = $("#data");
+    var search = $("#search");
+    if (add_list != 0){
+        search.hide();
+        el.html(`
+        <div class="col-12">
+            <form action="" id="add_list" method="post" class="was-validated">
+                <div class="mb-3">
+                    <label for="list_name" class="form-label">List Name</label>
+                    <input type="text" class="form-control" id="list_name" name="list_name" placeholder="List Name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="list_votes" class="form-label">List Votes</label>
+                    <input type="number" min="0" value="0" class="form-control" id="list_votes" name="list_votes" placeholder="List Votes" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        `);
+        $("#add_list").submit(function(e){
+            e.preventDefault();
+            var list_name = $("#list_name").val();
+            var list_votes = $("#list_votes").val();
+            var list = new lists();
+            list.getLocalstorageLists();
+            list.addList({id:new Date().getTime(), name:list_name, votes:list_votes});
+
+            list.saveLocalstorageLists();
+            window.location.href = "?page=1";
+        });
+    }else{
+        var list= new lists();
+        list.getLocalstorageLists();
+        list.orderListByLastAdded();
+        //for test
+        /* list.addList({id:1, name:"list1", votes:0});
+        list.addList({id:2, name:"list2", votes:0});
+        list.addList({id:3, name:"list3", votes:0});
+        list.addList({id:4, name:"list4", votes:0});
+        list.addList({id:5, name:"list5", votes:0});
+        list.addList({id:6, name:"list6", votes:0});
+        list.addList({id:7, name:"list7", votes:0});
+        list.addList({id:8, name:"list8", votes:0});
+        list.addList({id:9, name:"list9", votes:0});
+        list.addList({id:10, name:"list10", votes:0});  
+        list.addList({id:11, name:"list11", votes:0});
+        list.voteUp(2); */
+        //get page from url
+        var page = new URLSearchParams(window.location.search).get('page')??1; 
+        var limit = 5;
+        console.table(list.paginateLists(page, limit));
+        console.table(list.paginationButtons(page, limit));
+        console.table(list.getLists());
+
+        el.html(list.setHtmlPagination(page,limit));
+        function voteUp(id){
+            list.voteUp(id);
+            list.saveLocalstorageLists();
+            el.html(list.setHtmlPagination(page,limit));
+        }
+        function voteDown(id){
+            list.voteDown(id);
+            list.saveLocalstorageLists();
+            el.html(list.setHtmlPagination(page,limit));
+        }
+        function removeList(id){
+            $.confirm({
+                title: 'Dikkat!',
+                content: id+' numaralı liste verisi silinecektir!',
+                buttons: {
+                    confirm: {
+                        btnClass: 'btn-red',
+                        action:function () {
+                            list.removeList(id);
+                            el.html(list.setHtmlPagination(page,limit));
+                            list.saveLocalstorageLists();
+                            $.alert("Bağlantı başarıyla silindi!");
+                        }
+                    },
+                    cancel: function () {}
+                }
+            });
+        }
+        function paginate(page_){
+        page=page_;
+        el.html(list.setHtmlPagination(page_,limit));
+    }
+        function changeOrder(order){
+            list.changeOrder(order);
+            el.html(list.setHtmlPagination(page,limit));
+        }
+
+        search.keyup(function(){
+            var search_val = $(this).val();
+            list.searchLists(search_val);
+            el.html(list.setHtmlPagination(page,limit,search_val));
+        });
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js" integrity="sha512-zP5W8791v1A6FToy+viyoyUUyjCzx+4K8XZCKzW28AnCoepPNIXecxh9mvGuy3Rt78OzEsU+VCvcObwAMvBAww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css" integrity="sha512-0V10q+b1Iumz67sVDL8LPFZEEavo6H/nBSyghr7mm9JEQkOAm91HNoZQRvQdjennBb/oEuW+8oZHVpIKq+d25g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+ 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
+</body>
+</html>
